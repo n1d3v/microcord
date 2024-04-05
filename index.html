@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minicord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+<style>
+    /* Reset styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Set font */
+    body {
+        font-family: 'Lexend', sans-serif;
+        background-color: #36393f;
+        color: #fff;
+    }
+
+    /* Container styles */
+    .container {
+        display: flex;
+        height: 100vh;
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+        overflow-y: auto;
+        flex-shrink: 0;
+        width: 75px;
+        background-color: #2f3136;
+        position: relative; /* Add position relative */
+    }
+
+    .sidebar.friends-sidebar {
+        width: 250px;
+        background-color: #40444b;
+    }
+
+    /* Sidebar content styles */
+    .card {
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: #40444b;
+    }
+
+    .card h2 {
+        display: none;
+    }
+
+    /* List styles */
+    .list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .list li {
+        margin-bottom: 10px;
+    }
+
+    .list li a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .list li a:hover {
+        text-decoration: underline;
+    }
+
+    /* Content styles */
+    .content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .content h1 {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .content h2 {
+        margin-bottom: 20px;
+        text-align: center;
+        opacity: 0.75; /* Set opacity to 75% */
+    }
+
+    #login-container {
+        margin-bottom: 20px;
+    }
+
+    #token {
+        margin-right: 10px;
+        padding: 5px;
+        border-radius: 4px;
+        border: none;
+    }
+
+    #token:focus {
+        outline: none;
+    }
+
+    #login-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #7289da;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    #login-btn:hover {
+        background-color: #677bc4;
+    }
+
+    /* Hide scrollbar */
+    .sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;  /* IE and Edge */
+    }
+
+    /* Server icon styles */
+    .server-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 30px;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    /* Friend profile styles */
+    .friend-profile {
+        display: flex;
+        align-items: center;
+    }
+
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .profile-name {
+        font-size: 16px;
+    }
+
+    /* Adjust user info box position */
+    .popup {
+        position: fixed;
+        bottom: 20px; /* Adjust the distance from the bottom */
+        left: 50%; /* Move to the center horizontally */
+        transform: translateX(-50%); /* Center horizontally */
+        background-color: darkslategray;
+        padding: 10px;
+        display: none;
+        align-items: center;
+        border-radius: 10px;
+        max-width: 250px; /* Set max width */
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis for overflow */
+        animation: fadeInOut 3s ease forwards; /* Apply fade-in-out animation */
+    }
+
+    .popup.active {
+        display: flex;
+    }
+
+    .popup .profile-pic {
+        width: 30px; /* Adjust profile picture size */
+        height: 30px; /* Adjust profile picture size */
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .popup .profile-name {
+        font-size: 14px; /* Adjust font size */
+    }
+
+    .popup-content {
+        color: #fff;
+    }
+
+    .logo {
+        height: 60px;
+    }
+
+    /* Animation */
+    @keyframes fadeInOut {
+        0%, 100% {
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+
+    /* Message container styles */
+    #message-container {
+        background-color: #40444b;
+        padding: 20px;
+        border-radius: 10px;
+        overflow-y: auto;
+        max-height: 400px;
+        width: 100%;
+    }
+
+    .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #7289da;
+    }
+
+    .message .author {
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .message .content {
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar server-sidebar" id="server-sidebar">
+        <div class="card" id="server-list">
+            <h2>Servers</h2>
+            <ul class="list" id="servers">
+                <!-- Icon list items will be added dynamically -->
+            </ul>
+        </div>
+    </div>
+    <div class="sidebar friends-sidebar">
+        <div class="card" id="friends-list">
+            <h2>Friends</h2>
+            <ul class="list" id="friends">
+                <!-- Profile list items will be added dynamically -->
+            </ul>
+        </div>
+        <!-- Rounded floating box for user info (popup) -->
+        <div class="popup" id="user-info-popup">
+            <img class="profile-pic" src="" alt="Profile Picture">
+            <span class="popup-content">You're logged in as <span class="profile-name"></span></span>
+        </div>
+    </div>
+    <div class="content">
+        <img class="logo" src="https://cdn.discordapp.com/attachments/1199108028725731342/1225560274774261841/Group_17.png?ex=662192f3&is=660f1df3&hm=53f569f12be2b3c843eb13cb4a324399a9cd311287c6a9eb8bbe9784531df1fc&" alt="Minicord Logo">
+        <br>
+        <h1>Welcome to Minicord</h1>
+        <h2 id="login-message">Enter your token to login</h2>
+        <div id="login-container">
+            <input type="text" id="token" placeholder="Enter your token">
+            <button id="login-btn">Login</button>
+        </div>
+        <div id="message-container">
+            <!-- Message container -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('login-btn').addEventListener('click', login);
+
+    function login() {
+        const token = document.getElementById('token').value;
+        fetch('https://discord.com/api/v9/users/@me', {
+            headers: {
+                'Authorization': token
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Invalid token');
+            }
+            return response.json();
+        })
+        .then(data => {
+            localStorage.setItem('discordToken', token);
+            document.getElementById('login-message').textContent = "Click a DM/server to get started";
+            document.getElementById('login-container').style.display = 'none';
+
+            // Fetch server list
+            fetch('https://discord.com/api/v9/users/@me/guilds', {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch server list');
+                }
+                return response.json();
+            })
+            .then(servers => {
+                const serversList = document.getElementById('servers');
+                servers.forEach(server => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <img class="server-icon" src="https://cdn.discordapp.com/icons/${server.id}/${server.icon || 'default'}.png" alt="Server Icon">
+                    `;
+                    serversList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+
+            // Fetch friends list
+            fetch('https://discord.com/api/v9/users/@me/relationships', {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch friends list');
+                }
+                return response.json();
+            })
+            .then(friends => {
+                const friendsList = document.getElementById('friends');
+                friends.forEach(friend => {
+                    if (friend.type === 1) {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <a href="#" class="friend-link" data-user-id="${friend.user.id}">
+                                <div class="friend-profile">
+                                    <img class="profile-pic" src="https://cdn.discordapp.com/avatars/${friend.user.id}/${friend.user.avatar || 'default'}.png" alt="Profile Picture">
+                                    <span class="profile-name">${friend.user.username}</span>
+                                </div>
+                            </a>
+                        `;
+                        friendsList.appendChild(listItem);
+                    }
+                });
+
+                // Update sidebar heights to match
+                updateSidebarHeight();
+
+                // Add click event listener to the friend links
+                document.querySelectorAll('.friend-link').forEach(friendLink => {
+                    friendLink.addEventListener('click', function(event) {
+                        event.preventDefault(); // Prevent default anchor behavior
+                        const userId = friendLink.getAttribute('data-user-id');
+                        fetch(`https://discord.com/api/v9/users/@me/channels`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': token,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(channels => {
+                            const dmChannel = channels.find(channel => channel.type === 1 && channel.recipients[0].id === userId);
+                            if (dmChannel) {
+                                fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/messages?limit=20`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Authorization': token,
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(messages => {
+                                    const messageContainer = document.getElementById('message-container');
+                                    messageContainer.innerHTML = ''; // Clear existing messages
+                                    messages.forEach(message => {
+                                        const messageElement = document.createElement('div');
+                                        messageElement.classList.add('message');
+                                        messageElement.innerHTML = `
+                                            <span class="author">${message.author.username}</span>: <span class="content">${message.content}</span>
+                                        `;
+                                        messageContainer.appendChild(messageElement);
+                                    });
+                                    messageContainer.style.display = 'block'; // Show message container
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching messages:', error);
+                                    alert('Failed to fetch messages');
+                                });
+                            } else {
+                                console.error('DM channel not found.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching channels:', error);
+                            alert('Failed to fetch channels');
+                        });
+                    });
+                });
+                
+                // Set user info in the popup
+                const popup = document.getElementById('user-info-popup');
+                const username = data.username;
+                popup.querySelector('.profile-pic').src = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar || 'default'}.png`;
+                popup.querySelector('.profile-name').textContent = username;
+
+                // Adjust popup width based on username length
+                if (username.length > 10) {
+                    popup.style.maxWidth = '300px'; // Adjust width as needed
+                }
+                
+                popup.classList.add('active');
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+        })
+        .catch(error => {
+            alert(error.message);
+        });
+    }
+
+    // Update sidebar heights to match
+    function updateSidebarHeight() {
+        const serverSidebar = document.getElementById('server-sidebar');
+        const friendsSidebar = document.querySelector('.friends-sidebar');
+        serverSidebar.style.height = friendsSidebar.clientHeight + 'px';
+    }
+
+    // Check if user is already logged in
+    const storedToken = localStorage.getItem('discordToken');
+    if (storedToken) {
+        login();
+    }
+
+    // Automatically close popup after 3 seconds
+    setTimeout(() => {
+        const popup = document.getElementById('user-info-popup');
+        popup.classList.remove('active');
+    }, 3000);
+</script>
+</body>
+</html>
