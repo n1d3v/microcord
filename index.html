@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minicord</title>
+<title>Microcord</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
@@ -213,26 +213,26 @@
     #message-container {
         background-color: #40444b;
         padding: 20px;
-        border-radius: 10px;
         overflow-y: auto;
-        max-height: 400px;
+        max-height: 100%; /* Adjust max height */
         width: 100%;
     }
 
     .message {
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 5px;
-        background-color: #7289da;
+        display: flex;
+        align-items: baseline; /* Align items on the baseline */
     }
 
     .message .author {
         font-weight: bold;
         color: #fff;
+        min-width: 100px; /* Set a minimum width for the author name */
     }
 
-    .message .content {
+    .message .message-content {
         color: #fff;
+        margin-left: 3px; /* Add margin to separate author from message */
+        text-align: left; /* Align message content to the left */
     }
 </style>
 </head>
@@ -259,16 +259,16 @@
             <span class="popup-content">You're logged in as <span class="profile-name"></span></span>
         </div>
     </div>
-    <div class="content">
-        <img class="logo" src="https://cdn.discordapp.com/attachments/1199108028725731342/1225560274774261841/Group_17.png?ex=662192f3&is=660f1df3&hm=53f569f12be2b3c843eb13cb4a324399a9cd311287c6a9eb8bbe9784531df1fc&" alt="Minicord Logo">
+    <div class="content" id="content">
+        <img class="logo" src="https://cdn.discordapp.com/attachments/1199108028725731342/1225560274774261841/Group_17.png?ex=662192f3&is=660f1df3&hm=53f569f12be2b3c843eb13cb4a324399a9cd311287c6a9eb8bbe9784531df1fc&" alt="Microcord Logo">
         <br>
-        <h1>Welcome to Minicord</h1>
+        <h1>Welcome to Microcord</h1>
         <h2 id="login-message">Enter your token to login</h2>
         <div id="login-container">
             <input type="text" id="token" placeholder="Enter your token">
             <button id="login-btn">Login</button>
         </div>
-        <div id="message-container">
+        <div id="message-container" style="display:none;">
             <!-- Message container -->
         </div>
     </div>
@@ -369,31 +369,8 @@
                         .then(channels => {
                             const dmChannel = channels.find(channel => channel.type === 1 && channel.recipients[0].id === userId);
                             if (dmChannel) {
-                                fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/messages?limit=20`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Authorization': token,
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(messages => {
-                                    const messageContainer = document.getElementById('message-container');
-                                    messageContainer.innerHTML = ''; // Clear existing messages
-                                    messages.forEach(message => {
-                                        const messageElement = document.createElement('div');
-                                        messageElement.classList.add('message');
-                                        messageElement.innerHTML = `
-                                            <span class="author">${message.author.username}</span>: <span class="content">${message.content}</span>
-                                        `;
-                                        messageContainer.appendChild(messageElement);
-                                    });
-                                    messageContainer.style.display = 'block'; // Show message container
-                                })
-                                .catch(error => {
-                                    console.error('Error fetching messages:', error);
-                                    alert('Failed to fetch messages');
-                                });
+                                console.log("Loading messages");
+                                fetchAndDisplayMessages(dmChannel.id, token); // Fetch and display messages
                             } else {
                                 console.error('DM channel not found.');
                             }
@@ -432,6 +409,37 @@
         const serverSidebar = document.getElementById('server-sidebar');
         const friendsSidebar = document.querySelector('.friends-sidebar');
         serverSidebar.style.height = friendsSidebar.clientHeight + 'px';
+    }
+
+    // Fetch and display messages for the given channel ID
+    function fetchAndDisplayMessages(channelId, token) {
+        fetch(`https://discord.com/api/v9/channels/${channelId}/messages?limit=20`, {
+            method: 'GET',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(messages => {
+            console.log('Fetched messages:', messages); // Add this line
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = ''; // Clear existing messages
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.innerHTML = `
+                    <span class="author">${message.author.username}</span>: <span class="message-content">${message.content}</span>
+                `;
+                messageContainer.appendChild(messageElement);
+            });
+            messageContainer.style.display = 'block'; // Show message container
+            document.getElementById('content').replaceWith(messageContainer); // Replace #content with #message-container
+        })
+        .catch(error => {
+            console.error('Error fetching messages:', error);
+            alert('Failed to fetch messages');
+        });
     }
 
     // Check if user is already logged in
