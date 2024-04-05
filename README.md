@@ -1,4 +1,4 @@
-![Minicord Logo](https://github.com/n1d3v/minicord/assets/135556230/bb428c6c-682d-472e-abed-52be2ad41155)
+![Group 17](https://github.com/n1d3v/microcord/assets/135556230/39d81901-e1c1-4537-a85d-3c507838cc1e)
 ---
 # Microcord
 Minicord is a lightweight Discord client made in HTML and JS.
