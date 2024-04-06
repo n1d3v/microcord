@@ -12,6 +12,8 @@ It will help the project alot (because of my shitty ass code) and it will make t
 - [x] Logging in (with a token
 - [x] Loading servers and DMs
 - [x] Loading DMs (needs to be worked on)
+- [x] Sending DMs
+- [x] Recieving DMs 
 ### What's not working
 - Servers
 - Display names
